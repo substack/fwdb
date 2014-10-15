@@ -12,18 +12,15 @@ var docs = [
     { key: 'woo', hash: 'ccc', prev: [ 'bbb' ] }
 ];
 
-var hashes = [ 'aaa', 'bbb', 'fff', 'eee0', 'ddd', 'eee1', 'ccc' ];
-
 test('hairy forking links', function (t) {
-    t.plan(docs.length + hashes.length * 3 + 2);
+    t.plan(docs.length * 3 + 2);
     
     (function next () {
         if (docs.length === 0) return check();
         var doc = docs.shift();
         
-        fdb.create(doc, function (err, hash) {
+        fdb.create(doc, function (err) {
             t.ifError(err);
-            t.equal(hash, hashes.shift());
             next();
         });
     })();

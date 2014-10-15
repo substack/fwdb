@@ -56,10 +56,8 @@ var docs = [
     { key: 'woo', hash: 'ccc', prev: [ 'bbb' ] }
 ];
 
-var hashes = [ 'aaa', 'bbb', 'fff', 'eee', 'ddd', 'ccc' ];
-
 test('double out of order', function (t) {
-    t.plan(expected.length + docs.length + hashes.length);
+    t.plan(expected.length + docs.length);
     
     fdb.on('batch', function (batch) {
         t.deepEqual(batch, expected.shift());
@@ -69,9 +67,8 @@ test('double out of order', function (t) {
         if (docs.length === 0) return;
         var doc = docs.shift();
         
-        fdb.create(doc, function (err, hash) {
+        fdb.create(doc, function (err) {
             t.ifError(err);
-            t.equal(hash, hashes.shift());
             next();
         });
     })();

@@ -14,15 +14,14 @@ var docs = [
 var hashes = [ 'aaa', 'bbb', 'fff', 'eee', 'ddd', 'ccc' ];
 
 test('double links', function (t) {
-    t.plan(docs.length + hashes.length * 3);
+    t.plan(docs.length * 3);
     
     (function next () {
         if (docs.length === 0) return check();
         var doc = docs.shift();
         
-        fdb.create(doc, function (err, hash) {
+        fdb.create(doc, function (err) {
             t.ifError(err);
-            t.equal(hash, hashes.shift());
             next();
         });
     })();
