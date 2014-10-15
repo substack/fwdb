@@ -132,18 +132,19 @@ console.error('!DANGLE', p.hash, hash);
     });
 };
 
-FWDB.prototype.heads = function (key) {
+FWDB.prototype.heads = function (key, cb) {
     var opts = {
         gt: [ 'head', defined(key, null), null ],
         lt: [ 'head', key, undefined ]
     };
-    return readonly(combine([
-        this.db.createReadStream(opts),
-        through.obj(function (row, enc, next) {
-            this.push({ key: row.key[1], hash: row.key[2] });
-            next();
-        })
-    ]));
+    var r = this.db.createReadStream(opts);
+    r.on('error', cb);
+    var tr = through.obj(function (row, enc, next) {
+        this.push({ key: row.key[1], hash: row.key[2] });
+        next();
+    });
+    if (cb) tr.pipe(collect(cb));
+    return readonly(r.pipe(tr));
 };
 
 FWDB.prototype.getMeta = function (hash, cb) {
@@ -170,3 +171,10 @@ FWDB.prototype.getLinks = function (hash) {
         })
     ]));
 };
+
+function collect (cb) {
+    var rows = [];
+    return through.obj(write, end);
+    function write (row, enc, next) { rows.push(row); next() }
+    function end () { cb(null, rows) }
+}
