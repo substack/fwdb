@@ -33,23 +33,19 @@ FWDB.prototype.save = function (opts, cb) {
     
     var rows = [];
     rows.push({ type: 'put', key: [ 'key', key ], value: 0 });
+    rows.push({ type: 'hash', key: [ 'hash', hash ], value: 0 });
     
-    if (prev.length === 0) {
-        rows.push({ type: 'put', key: [ 'tail', key, hash ], value: 0 });
-    }
-    
-    var pending = 1;
+    var pending = 1 + prev.length;
     prev.forEach(function (p) {
-        pending ++;
         self._updatePrev(p, hash, key, function (err, rows_) {
-            if (err) return w.emit('error', err);
+            if (err) return cb(err);
             rows.push.apply(rows, rows_);
             if (-- pending === 0) commit();
         });
     });
     
     self._getDangling(hash, key, function (err, dangling) {
-        if (err) return w.emit('error', err);
+        if (err) return cb(err);
         if (dangling.length === 0) {
             rows.push({
                 type: 'put',
@@ -68,12 +64,11 @@ FWDB.prototype.save = function (opts, cb) {
         });
         if (-- pending === 0) commit();
     });
-    rows.push({ type: 'put', key: [ 'meta', hash ], value: 0 });
     
     function commit () { prebatch(rows, hash, done) }
     
     function done (err, rows_) {
-        if (err) return w.emit('error', err);
+        if (err) return cb(err);
         if (!isarray(rows_)) {
             cb(new Error('prebatch result not an array'));
         }
@@ -107,7 +102,7 @@ FWDB.prototype._getDangling = function (hash, key, cb) {
 
 FWDB.prototype._updatePrev = function (p, hash, key, cb) {
     var rows = [];
-    this.db.get([ 'meta', p.hash ], function (err, value) {
+    this.db.get([ 'hash', p.hash ], function (err, value) {
         if (err && err.type === 'NotFoundError') {
 console.error('!DANGLE', p.hash, hash); 
             rows.push({
@@ -134,24 +129,17 @@ console.error('!DANGLE', p.hash, hash);
 
 FWDB.prototype.heads = function (key, cb) {
     var opts = {
-        gt: [ 'head', defined(key, null), null ],
+        gt: [ 'head', key, null ],
         lt: [ 'head', key, undefined ]
     };
     var r = this.db.createReadStream(opts);
     r.on('error', cb);
     var tr = through.obj(function (row, enc, next) {
-        this.push({ key: row.key[1], hash: row.key[2] });
+        this.push({ hash: row.key[2] });
         next();
     });
     if (cb) tr.pipe(collect(cb));
     return readonly(r.pipe(tr));
-};
-
-FWDB.prototype.getMeta = function (hash, cb) {
-    this.db.get([ 'meta', hash ], function (err, row) {
-        if (err && cb) cb(err)
-        else if (cb) cb(null, row.meta || {})
-    });
 };
 
 FWDB.prototype.getLinks = function (hash) {
@@ -163,10 +151,7 @@ FWDB.prototype.getLinks = function (hash) {
     return readonly(combine([
         this.db.createReadStream(opts),
         through.obj(function (row, enc, next) {
-            this.push({
-                key: row.value,
-                hash: row.key[2]
-            });
+            this.push({ key: row.value, hash: row.key[2] });
             next();
         })
     ]));
