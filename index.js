@@ -1,11 +1,9 @@
 var sublevel = require('level-sublevel/bytewise');
 var bytewise = require('bytewise');
 var defined = require('defined');
-var combine = require('stream-combiner2');
 var through = require('through2');
 var readonly = require('read-only-stream');
 
-var Readable = require('readable-stream').Readable;
 var has = require('has');
 var isarray = require('isarray');
 var inherits = require('inherits');

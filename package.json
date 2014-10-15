@@ -1,0 +1,42 @@
+{
+  "name": "fwdb",
+  "version": "1.0.0",
+  "description": "forking historical link database on top of leveldb",
+  "main": "index.js",
+  "dependencies": {
+    "bytewise": "~0.7.1",
+    "defined": "~0.0.0",
+    "has": "~0.0.1",
+    "inherits": "~2.0.1",
+    "isarray": "~0.0.1",
+    "level-sublevel": "~6.3.13",
+    "read-only-stream": "~1.1.1",
+    "through2": "~1.1.1"
+  },
+  "devDependencies": {
+    "level-test": "~1.6.5",
+    "tape": "^2.13.2"
+  },
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/substack/fwdb.git"
+  },
+  "homepage": "https://github.com/substack/fwdb",
+  "keywords": [
+    "forward",
+    "link",
+    "leveldb",
+    "content-addressable",
+    "hash",
+    "database"
+  ],
+  "author": {
+    "name": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net"
+  },
+  "license": "MIT"
+}
