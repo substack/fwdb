@@ -111,7 +111,7 @@ FWDB.prototype.heads = function (key, cb) {
         lt: [ 'head', key, undefined ]
     };
     var r = this.db.createReadStream(opts);
-    r.on('error', cb);
+    if (cb) r.on('error', cb);
     var tr = through.obj(function (row, enc, next) {
         this.push({ hash: row.key[2] });
         next();
@@ -120,18 +120,19 @@ FWDB.prototype.heads = function (key, cb) {
     return readonly(r.pipe(tr));
 };
 
-FWDB.prototype.links = function (hash) {
+FWDB.prototype.links = function (hash, cb) {
     var opts = {
         gt: [ 'link', hash, null ],
         lt: [ 'link', hash, undefined ]
     };
-    return readonly(combine([
-        this.db.createReadStream(opts),
-        through.obj(function (row, enc, next) {
-            this.push({ key: row.value, hash: row.key[2] });
-            next();
-        })
-    ]));
+    var r = this.db.createReadStream(opts);
+    if (cb) r.on('error', cb);
+    var tr = through.obj(function (row, enc, next) {
+        this.push({ key: row.value, hash: row.key[2] });
+        next();
+    });
+    if (cb) tr.pipe(collect(cb));
+    return readonly(r.pipe(tr));
 };
 
 FWDB.prototype.keys = function (opts) {
