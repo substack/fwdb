@@ -13,6 +13,8 @@ hash in the contents of the new document itself.
 Just offer @dominictarr your couch and wifi password for a few weeks and
 everything will start to make sense.
 
+[![build status](https://secure.travis-ci.org/substack/fwdb.png)](http://travis-ci.org/substack/fwdb)
+
 # example
 
 Using `fdb.create()` we can create some documents:
