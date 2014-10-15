@@ -1,5 +1,5 @@
 var test = require('tape');
-var db = require('level-test')()('double-links');
+var db = require('level-test')()('hairy-fork-links');
 var fdb = require('../')(db);
 
 var docs = [
@@ -14,7 +14,7 @@ var docs = [
 
 var hashes = [ 'aaa', 'bbb', 'fff', 'eee0', 'ddd', 'eee1', 'ccc' ];
 
-test('double links', function (t) {
+test('hairy forking links', function (t) {
     t.plan(docs.length + hashes.length * 3 + 2);
     
     (function next () {
