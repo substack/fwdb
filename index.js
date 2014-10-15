@@ -34,7 +34,7 @@ FWDB.prototype.create = function (opts, cb) {
     var key = opts.key;
     var prebatch = defined(
         opts.prebatch,
-        function (rows, hash, done) { done(null, rows) }
+        function (rows, done) { done(null, rows) }
     );
     
     var rows = [];
@@ -90,7 +90,7 @@ FWDB.prototype.create = function (opts, cb) {
         if (-- pending === 0) commit();
     });
     
-    function commit () { prebatch(rows, hash, done) }
+    function commit () { prebatch(rows, done) }
     
     function done (err, rows_) {
         if (err) return cb(err);
@@ -135,19 +135,23 @@ FWDB.prototype.links = function (hash, cb) {
     return readonly(r.pipe(tr));
 };
 
-FWDB.prototype.keys = function (opts) {
+FWDB.prototype.keys = function (opts, cb) {
+    if (typeof opts === 'function') {
+        cb = opts;
+        opts = {};
+    }
     if (!opts) opts = {};
     var ropts = {
         gt: [ 'key', defined(opts.gt, null) ],
         lt: [ 'key', defined(opts.lt, undefined) ]
     };
-    return readonly(combine([
-        this.db.createReadStream(ropts),
-        through.obj(function (row, enc, next) {
-            this.push({ key: row.key[1] });
-            next();
-        })
-    ]));
+    var r = this.db.createReadStream(ropts);
+    var tr = through.obj(function (row, enc, next) {
+        this.push({ key: row.key[1] });
+        next();
+    });
+    if (cb) tr.pipe(collect(cb));
+    return readonly(r.pipe(tr));
 };
 
 function collect (cb) {
