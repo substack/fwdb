@@ -8,15 +8,19 @@ var readonly = require('read-only-stream');
 var Readable = require('readable-stream').Readable;
 var has = require('has');
 var isarray = require('isarray');
+var inherits = require('inherits');
+var EventEmitter = require('events').EventEmitter;
 
 module.exports = FWDB;
+inherits(FWDB, EventEmitter);
 
 function FWDB (db) {
     if (!(this instanceof FWDB)) return new FWDB(db);
+    EventEmitter.call(this);
     this.db = sublevel(db, { keyEncoding: bytewise, valueEncoding: 'json' });
 }
 
-FWDB.prototype.save = function (opts, cb) {
+FWDB.prototype.create = function (opts, cb) {
     var self = this;
     if (typeof opts === 'function') {
         cb = opts;
@@ -25,6 +29,8 @@ FWDB.prototype.save = function (opts, cb) {
     if (!opts) opts = {};
     var hash = opts.hash;
     var prev = defined(opts.prev, []);
+    if (!isarray(prev)) prev = [ prev ];
+    
     var key = opts.key;
     var prebatch = defined(
         opts.prebatch,
@@ -33,18 +39,37 @@ FWDB.prototype.save = function (opts, cb) {
     
     var rows = [];
     rows.push({ type: 'put', key: [ 'key', key ], value: 0 });
-    rows.push({ type: 'hash', key: [ 'hash', hash ], value: 0 });
+    rows.push({ type: 'put', key: [ 'hash', hash ], value: 0 });
     
     var pending = 1 + prev.length;
-    prev.forEach(function (p) {
-        self._updatePrev(p, hash, key, function (err, rows_) {
+    prev.forEach(function (phash) {
+        exists(self.db, [ 'hash', phash ], function (err, ex) {
             if (err) return cb(err);
-            rows.push.apply(rows, rows_);
+            
+            if (ex) {
+                rows.push({
+                    type: 'del',
+                    key: [ 'head', key, phash ],
+                    value: 0
+                });
+                rows.push({
+                    type: 'put',
+                    key: [ 'link', phash, hash ],
+                    value: key
+                });
+            }
+            else {
+                rows.push({
+                    type: 'put',
+                    key: [ 'dangle', key, phash, hash ],
+                    value: 0
+                });
+            }
             if (-- pending === 0) commit();
         });
     });
     
-    self._getDangling(hash, key, function (err, dangling) {
+    getDangling(self.db, key, hash, function (err, dangling) {
         if (err) return cb(err);
         if (dangling.length === 0) {
             rows.push({
@@ -72,59 +97,12 @@ FWDB.prototype.save = function (opts, cb) {
         if (!isarray(rows_)) {
             cb(new Error('prebatch result not an array'));
         }
+        self.emit('batch', rows_);
         self.db.batch(rows_, function (err) {
             if (err) cb(err)
             else if (cb) cb(null, hash)
         });
     }
-};
-
-FWDB.prototype._getDangling = function (hash, key, cb) {
-    var dangling = [], links = [], pending = 2;
-    var dopts = {
-        gt: [ 'dangle', key, hash, null ],
-        lt: [ 'dangle', key, hash, undefined ]
-    };
-    var lopts = {
-        gt: [ 'link', key, hash, null ],
-        lt: [ 'link', key, hash, undefined ]
-    };
-    var sd = this.db.createReadStream(dopts);
-    var sl = this.db.createReadStream(lopts);
-    sd.on('error', cb);
-    sd.pipe(through.obj(dwrite, end));
-    sl.pipe(through.obj(lwrite, end));
-    
-    function dwrite (row, enc, next) { dangling.push(row); next() }
-    function lwrite (row, enc, next) { links.push(row); next() }
-    function end () { if (-- pending === 0) cb(null, dangling, links) }
-};
-
-FWDB.prototype._updatePrev = function (p, hash, key, cb) {
-    var rows = [];
-    this.db.get([ 'hash', p.hash ], function (err, value) {
-        if (err && err.type === 'NotFoundError') {
-console.error('!DANGLE', p.hash, hash); 
-            rows.push({
-                type: 'put',
-                key: [ 'dangle', p.key, p.hash, hash ],
-                value: 0
-            });
-        }
-        else {
-            rows.push({
-                type: 'del',
-                key: [ 'head', p.key, p.hash ],
-                value: 0
-            });
-            rows.push({
-                type: 'put',
-                key: [ 'link', p.hash, hash ],
-                value: key
-            });
-        }
-        cb(null, rows);
-    });
 };
 
 FWDB.prototype.heads = function (key, cb) {
@@ -176,4 +154,24 @@ function collect (cb) {
     return through.obj(write, end);
     function write (row, enc, next) { rows.push(row); next() }
     function end () { cb(null, rows) }
+}
+
+function exists (db, key, cb) {
+    db.get(key, function (err, value) {
+        if (err && err.type === 'NotFoundError') {
+            cb(null, false);
+        }
+        else if (err) cb(err)
+        else cb(null, true)
+    });
+}
+
+function getDangling (db, key, hash, cb) {
+    var opts = {
+        gt: [ 'dangle', key, hash, null ],
+        lt: [ 'dangle', key, hash, undefined ]
+    };
+    var s = db.createReadStream(opts);
+    s.on('error', cb);
+    s.pipe(collect(cb));
 }
