@@ -142,16 +142,30 @@ FWDB.prototype.heads = function (key, cb) {
     return readonly(r.pipe(tr));
 };
 
-FWDB.prototype.getLinks = function (hash) {
-    var ghash = hash === undefined ? null : hash;
+FWDB.prototype.links = function (hash) {
     var opts = {
-        gt: [ 'link', ghash, null ],
+        gt: [ 'link', hash, null ],
         lt: [ 'link', hash, undefined ]
     };
     return readonly(combine([
         this.db.createReadStream(opts),
         through.obj(function (row, enc, next) {
             this.push({ key: row.value, hash: row.key[2] });
+            next();
+        })
+    ]));
+};
+
+FWDB.prototype.keys = function (opts) {
+    if (!opts) opts = {};
+    var ropts = {
+        gt: [ 'key', defined(opts.gt, null) ],
+        lt: [ 'key', defined(opts.lt, undefined) ]
+    };
+    return readonly(combine([
+        this.db.createReadStream(ropts),
+        through.obj(function (row, enc, next) {
+            this.push({ key: row.key[1] });
             next();
         })
     ]));
