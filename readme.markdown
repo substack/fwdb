@@ -146,4 +146,74 @@ $ node keys.js
 { key: 'yay' }
 ```
 
+# methods
 
+``` js
+var fwdb = require('fwdb')
+```
+
+## var fw = fwdb(db)
+
+Create a fwdb instance `fw` from a leveldb handle `db`.
+
+## fw.create(opts, cb)
+
+Store a document given: 
+
+* `opts.key` - keyspace as a string
+* `opts.hash` - hash of the document as a string
+* `opts.prev` - array of string hashes of any previous documents to link back to
+* `opts.prebatch(rows, cb)` - function that gets called before `db.batch()`
+where you can add extra rows to the batch; keys are bytewise encoded
+
+`cb(err)` fires at the end of the operation with any errors.
+
+## var r = fw.heads(key, cb)
+
+Return an object stream of all the heads present for the given `key`.
+
+Objects in the output stream are of the form:
+
+```
+{ hash: '...' }
+```
+
+If provided, `cb(err, heads)` fires with the buffered array of output objects.
+
+## var r = fw.links(key, cb)
+
+Return an object stream of all the links present for the given `key`.
+
+Objects in the output stream are of the form:
+
+```
+{ hash: '...', key: '...' }
+```
+
+If provided, `cb(err, links)` fires with the buffered array of output objects.
+
+## var r = fw.keys(opts={}, cb)
+
+Return an object stream of all the keys present in the database.
+
+Optionally bound the query with `opts.gt` and `opts.lt`.
+
+Objects in the output stream are of the form:
+
+```
+{ key: '...' }
+```
+
+If provided, `cb(err, keys)` fires with the buffered array of output objects.
+
+# install
+
+With [npm](https://npmjs.org) do:
+
+```
+npm install fwdb
+```
+
+# license
+
+MIT
