@@ -100,7 +100,7 @@ FWDB.prototype.create = function (opts, cb) {
         self.emit('batch', rows_);
         self.db.batch(rows_, function (err) {
             if (err) cb(err)
-            else if (cb) cb(null, hash)
+            else if (cb) cb(null)
         });
     }
 };

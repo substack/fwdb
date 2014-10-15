@@ -1,14 +1,6 @@
-var minimist = require('minimist');
 var db = require('level')('/tmp/edit.db');
 var fdb = require('../')(db);
-var argv = minimist(process.argv.slice(2), {
-    default: { hash: Math.floor(Math.pow(16,8) * Math.random()).toString(16) }
-});
+var minimist = require('minimist');
 
-fdb.heads(argv._[0], function (err, hash) {
-    if (err) {
-        console.error(err);
-        process.exit(1);
-    }
-    else console.log(hash);
-});
+var argv = minimist(process.argv.slice(2));
+fdb.heads(argv._[0]).on('data', console.log);
