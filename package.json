@@ -1,6 +1,6 @@
 {
   "name": "fwdb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "forking historical link database on top of leveldb",
   "main": "index.js",
   "dependencies": {
