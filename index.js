@@ -67,9 +67,16 @@ FWDB.prototype.create = function (opts, cb) {
         });
     });
     
-    getDangling(self.db, key, hash, function (err, dangling) {
+    exists(self.db, [ 'hash', hash ], function (err, ex) {
         if (err) return cb(err);
-        if (dangling.length === 0) {
+        getDangling(self.db, key, hash, function (err, dangling) {
+            if (err) return cb(err);
+            ondangling(dangling, ex);
+        });
+    });
+    
+    function ondangling (dangling, ex) {
+        if (dangling.length === 0 && !ex) {
             rows.push({
                 type: 'put',
                 key: [ 'head', key, hash ],
@@ -86,7 +93,7 @@ FWDB.prototype.create = function (opts, cb) {
             });
         });
         if (-- pending === 0) commit();
-    });
+    }
     
     function commit () { prebatch(rows, done) }
     

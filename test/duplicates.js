@@ -1,5 +1,5 @@
 var test = require('tape');
-var db = require('level-test')()('double-links');
+var db = require('level-test')()('duplicates');
 var fdb = require('../')(db);
 
 var docs = [
@@ -42,7 +42,7 @@ test('duplicate insertions', function (t) {
         });
         fdb.heads('woo', function (err, heads) {
             t.ifError(err);
-            t.deepEqual(heads, [ 'ccc' ]);
+            t.deepEqual(heads, [ { hash:  'ccc' } ]);
         });
     }
 });
