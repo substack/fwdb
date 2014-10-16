@@ -110,10 +110,15 @@ FWDB.prototype.create = function (opts, cb) {
     }
 };
 
-FWDB.prototype.heads = function (key, cb) {
+FWDB.prototype.heads = function (key, opts_, cb) {
+    if (typeof opts_ === 'function') {
+        cb = opts_;
+        opts_ = {};
+    }
+    if (!opts_) opts_ = {};
     var opts = {
-        gt: [ 'head', key, null ],
-        lt: [ 'head', key, undefined ]
+        gt: [ 'head', key, defined(opts_.gt, null) ],
+        lt: [ 'head', key, defined(opts_.lt, undefined) ]
     };
     var r = this.db.createReadStream(opts);
     if (cb) r.on('error', cb);
