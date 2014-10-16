@@ -110,24 +110,16 @@ FWDB.prototype.create = function (opts, cb) {
     }
 };
 
-FWDB.prototype.heads = function (key, opts_, cb) {
-    if (typeof opts_ === 'function') {
-        cb = opts_;
-        opts_ = {};
+FWDB.prototype.heads = function (key, opts, cb) {
+    if (typeof opts === 'function') {
+        cb = opts;
+        opts = {};
     }
-    if (!opts_) opts_ = {};
-    var opts = {};
-    if (defined(opts_.gte, opts_.ge) !== undefined) {
-        opts.gte = [ 'head', key, defined(opts_.gte, opts_.ge, null) ];
-    }
-    else opts.gt = [ 'head', key, defined(opts_.gt, null) ]
-    
-    if (defined(opts_.lte, opts_.le) !== undefined) {
-        opts.lte = [ 'head', key, defined(opts_.lte, opts_.le, undefined) ];
-    }
-    else opts.lt = [ 'head', key, defined(opts_.lt, undefined) ]
-    
-    var r = this.db.createReadStream(opts);
+    if (!opts) opts = {};
+    var r = this.db.createReadStream(prefixer(opts, {
+        gt: function (x) { return [ 'head', key, defined(x, null) ] },
+        lt: function (x) { return [ 'head', key, defined(x, undefined) ] }
+    }));
     if (cb) r.on('error', cb);
     var tr = through.obj(function (row, enc, next) {
         this.push({ hash: row.key[2] });
@@ -196,4 +188,21 @@ function getDangling (db, key, hash, cb) {
     var s = db.createReadStream(opts);
     s.on('error', cb);
     s.pipe(collect(cb));
+}
+
+function prefixer (opts, prefix) {
+    if (!opts) opts = {};
+    var xopts = {};
+    
+    if (defined(opts.gte, opts.ge) !== undefined) {
+        xopts.gte = prefix.gt(defined(opts.gte, opts.ge));
+    }
+    else xopts.gt = prefix.gt(opts.gt);
+    
+    if (defined(opts.lte, opts.le) !== undefined) {
+        xopts.lte = prefix.lt(defined(opts.lte, opts.le));
+    }
+    else xopts.lt = prefix.lt(opts.lt);
+    
+    return xopts;
 }
