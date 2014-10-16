@@ -41,5 +41,12 @@ test('heads range', function (t) {
                 { hash:  'eee' }
             ]);
         });
+        fdb.heads('woo', { gte: 'ddd', lte: 'eee' }, function (err, heads) {
+            t.ifError(err);
+            t.deepEqual(heads, [
+                { hash:  'ddd' },
+                { hash:  'eee' }
+            ]);
+        });
     }
 });
