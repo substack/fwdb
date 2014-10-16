@@ -134,12 +134,16 @@ FWDB.prototype.heads = function (key, opts, cb) {
     return readonly(r.pipe(tr));
 };
 
-FWDB.prototype.links = function (hash, cb) {
-    var opts = {
-        gt: [ 'link', hash, null ],
-        lt: [ 'link', hash, undefined ]
-    };
-    var r = this.db.createReadStream(opts);
+FWDB.prototype.links = function (hash, opts, cb) {
+    if (typeof opts === 'function') {
+        cb = opts;
+        opts = {};
+    }
+    if (!opts) opts = {};
+    var r = this.db.createReadStream(wrap(opts, {
+        gt: function (x) { return [ 'link', hash, defined(x, null) ] },
+        lt: function (x) { return [ 'link', hash, defined(x, undefined) ] }
+    }));
     if (cb) r.on('error', cb);
     var tr = through.obj(function (row, enc, next) {
         this.push({ key: row.value, hash: row.key[2] });

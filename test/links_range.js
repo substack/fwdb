@@ -15,7 +15,7 @@ var docs = [
 ];
 
 test('links range', function (t) {
-    t.plan(docs.length + 3*2);
+    t.plan(docs.length + 4*2);
     
     (function next () {
         if (docs.length === 0) return check();
@@ -41,20 +41,33 @@ test('links range', function (t) {
                 { hash:  'hhh' }
             ]);
         });
-        fdb.links('woo', { gt: 'bbb', lt: 'fff' }, function (err, heads) {
+        fdb.links('root', function (err, heads) {
             t.ifError(err);
             t.deepEqual(heads, [
-                { hash:  'ccc' },
-                { hash:  'ddd' },
-                { hash:  'eee' }
+                { key: 'woo', hash:  'aaa' },
+                { key: 'woo', hash:  'bbb' },
+                { key: 'woo', hash:  'ccc' },
+                { key: 'woo', hash:  'ddd' },
+                { key: 'woo', hash:  'eee' },
+                { key: 'woo', hash:  'fff' },
+                { key: 'woo', hash:  'ggg' },
+                { key: 'woo', hash:  'hhh' }
             ]);
         });
-        fdb.heads('woo', { gte: 'ddd', lte: 'fff' }, function (err, heads) {
+        fdb.links('root', { gt: 'bbb', lt: 'fff' }, function (err, heads) {
             t.ifError(err);
             t.deepEqual(heads, [
-                { hash:  'ddd' },
-                { hash:  'eee' },
-                { hash:  'fff' }
+                { key: 'woo', hash:  'ccc' },
+                { key: 'woo', hash:  'ddd' },
+                { key: 'woo', hash:  'eee' }
+            ]);
+        });
+        fdb.links('root', { gte: 'ddd', lte: 'fff' }, function (err, heads) {
+            t.ifError(err);
+            t.deepEqual(heads, [
+                { key: 'woo', hash:  'ddd' },
+                { key: 'woo', hash:  'eee' },
+                { key: 'woo', hash:  'fff' }
             ]);
         });
     }
