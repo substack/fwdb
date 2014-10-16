@@ -1,5 +1,5 @@
 var test = require('tape');
-var db = require('level-test')()('duplicates');
+var db = require('level-test')()('heads-range');
 var fdb = require('../')(db);
 
 var docs = [

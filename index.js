@@ -28,6 +28,10 @@ FWDB.prototype.create = function (opts, cb) {
     var hash = opts.hash;
     var prev = defined(opts.prev, []);
     if (!isarray(prev)) prev = [ prev ];
+    var cb_ = function (err) {
+        cb(err);
+        cb = function () {};
+    };
     
     var key = opts.key;
     var prebatch = defined(
@@ -42,7 +46,7 @@ FWDB.prototype.create = function (opts, cb) {
     var pending = 1 + prev.length;
     prev.forEach(function (phash) {
         exists(self.db, [ 'hash', phash ], function (err, ex) {
-            if (err) return cb(err);
+            if (err) return cb_(err);
             
             if (ex) {
                 rows.push({
@@ -68,9 +72,9 @@ FWDB.prototype.create = function (opts, cb) {
     });
     
     exists(self.db, [ 'hash', hash ], function (err, ex) {
-        if (err) return cb(err);
+        if (err) return cb_(err);
         getDangling(self.db, key, hash, function (err, dangling) {
-            if (err) return cb(err);
+            if (err) return cb_(err);
             ondangling(dangling, ex);
         });
     });
@@ -98,14 +102,14 @@ FWDB.prototype.create = function (opts, cb) {
     function commit () { prebatch(rows, done) }
     
     function done (err, rows_) {
-        if (err) return cb(err);
+        if (err) return cb_(err);
         if (!isarray(rows_)) {
-            cb(new Error('prebatch result not an array'));
+            cb_(new Error('prebatch result not an array'));
         }
         self.emit('batch', rows_);
         self.db.batch(rows_, function (err) {
-            if (err) cb(err)
-            else if (cb) cb(null)
+            if (err) cb_(err)
+            else if (cb) cb_(null)
         });
     }
 };
