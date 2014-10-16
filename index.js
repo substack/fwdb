@@ -116,10 +116,17 @@ FWDB.prototype.heads = function (key, opts_, cb) {
         opts_ = {};
     }
     if (!opts_) opts_ = {};
-    var opts = {
-        gt: [ 'head', key, defined(opts_.gt, null) ],
-        lt: [ 'head', key, defined(opts_.lt, undefined) ]
-    };
+    var opts = {};
+    if (defined(opts_.gte, opts_.ge) !== undefined) {
+        opts.gte = [ 'head', key, defined(opts_.gte, opts_.ge, null) ];
+    }
+    else opts.gt = [ 'head', key, defined(opts_.gt, null) ]
+    
+    if (defined(opts_.lte, opts_.le) !== undefined) {
+        opts.lte = [ 'head', key, defined(opts_.lte, opts_.le, undefined) ];
+    }
+    else opts.lt = [ 'head', key, defined(opts_.lt, undefined) ]
+    
     var r = this.db.createReadStream(opts);
     if (cb) r.on('error', cb);
     var tr = through.obj(function (row, enc, next) {

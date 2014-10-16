@@ -12,7 +12,7 @@ var docs = [
 ];
 
 test('heads range', function (t) {
-    t.plan(docs.length + 2*2);
+    t.plan(docs.length + 3*2);
     
     (function next () {
         if (docs.length === 0) return check();
