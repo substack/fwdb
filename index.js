@@ -3,6 +3,7 @@ var bytewise = require('bytewise');
 var defined = require('defined');
 var through = require('through2');
 var readonly = require('read-only-stream');
+var wrap = require('level-option-wrap');
 
 var has = require('has');
 var isarray = require('isarray');
@@ -120,7 +121,7 @@ FWDB.prototype.heads = function (key, opts, cb) {
         opts = {};
     }
     if (!opts) opts = {};
-    var r = this.db.createReadStream(prefixer(opts, {
+    var r = this.db.createReadStream(wrap(opts, {
         gt: function (x) { return [ 'head', key, defined(x, null) ] },
         lt: function (x) { return [ 'head', key, defined(x, undefined) ] }
     }));
@@ -192,21 +193,4 @@ function getDangling (db, key, hash, cb) {
     var s = db.createReadStream(opts);
     s.on('error', cb);
     s.pipe(collect(cb));
-}
-
-function prefixer (opts, prefix) {
-    if (!opts) opts = {};
-    var xopts = {};
-    
-    if (defined(opts.gte, opts.ge) !== undefined) {
-        xopts.gte = prefix.gt(defined(opts.gte, opts.ge));
-    }
-    else xopts.gt = prefix.gt(opts.gt);
-    
-    if (defined(opts.lte, opts.le) !== undefined) {
-        xopts.lte = prefix.lt(defined(opts.lte, opts.le));
-    }
-    else xopts.lt = prefix.lt(opts.lt);
-    
-    return xopts;
 }

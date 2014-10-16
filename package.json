@@ -7,11 +7,12 @@
     "bytewise": "~0.7.1",
     "defined": "~0.0.0",
     "has": "~0.0.1",
-    "inherits": "~2.0.1",
+    "inherits": "^2.0.1",
     "isarray": "~0.0.1",
-    "level-sublevel": "~6.3.13",
-    "read-only-stream": "~1.1.1",
-    "through2": "~1.1.1"
+    "level-option-wrap": "^1.0.0",
+    "level-sublevel": "^6.3.13",
+    "read-only-stream": "^1.1.1",
+    "through2": "^1.1.1"
   },
   "devDependencies": {
     "level-test": "~1.6.5",
