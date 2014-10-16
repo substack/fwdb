@@ -125,12 +125,13 @@ FWDB.prototype.heads = function (key, opts, cb) {
         gt: function (x) { return [ 'head', key, defined(x, null) ] },
         lt: function (x) { return [ 'head', key, defined(x, undefined) ] }
     }));
-    if (cb) r.on('error', cb);
     var tr = through.obj(function (row, enc, next) {
         this.push({ hash: row.key[2] });
         next();
     });
+    if (cb) r.on('error', cb);
     if (cb) tr.pipe(collect(cb));
+    r.on('error', function (err) { tr.emit('error', err) });
     return readonly(r.pipe(tr));
 };
 
@@ -144,12 +145,13 @@ FWDB.prototype.links = function (hash, opts, cb) {
         gt: function (x) { return [ 'link', hash, defined(x, null) ] },
         lt: function (x) { return [ 'link', hash, defined(x, undefined) ] }
     }));
-    if (cb) r.on('error', cb);
     var tr = through.obj(function (row, enc, next) {
         this.push({ key: row.value, hash: row.key[2] });
         next();
     });
+    if (cb) tr.on('error', cb);
     if (cb) tr.pipe(collect(cb));
+    r.on('error', function (err) { tr.emit('error', err) });
     return readonly(r.pipe(tr));
 };
 
@@ -167,7 +169,9 @@ FWDB.prototype.keys = function (opts, cb) {
         this.push({ key: row.key[1] });
         next();
     });
+    if (cb) tr.on('error', cb);
     if (cb) tr.pipe(collect(cb));
+    r.on('error', function (err) { tr.emit('error', err) });
     return readonly(r.pipe(tr));
 };
 
