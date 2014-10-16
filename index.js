@@ -159,11 +159,10 @@ FWDB.prototype.keys = function (opts, cb) {
         opts = {};
     }
     if (!opts) opts = {};
-    var ropts = {
-        gt: [ 'key', defined(opts.gt, null) ],
-        lt: [ 'key', defined(opts.lt, undefined) ]
-    };
-    var r = this.db.createReadStream(ropts);
+    var r = this.db.createReadStream(wrap(opts, {
+        gt: function (x) { return [ 'key', defined(x, null) ] },
+        lt: function (x) { return [ 'key', defined(x, undefined) ] }
+    }));
     var tr = through.obj(function (row, enc, next) {
         this.push({ key: row.key[1] });
         next();

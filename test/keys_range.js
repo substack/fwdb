@@ -1,5 +1,5 @@
 var test = require('tape');
-var db = require('level-test')()('links-range');
+var db = require('level-test')()('keys-range');
 var fdb = require('../')(db);
 
 var docs = [
