@@ -170,7 +170,7 @@ where you can add extra rows to the batch; keys are bytewise encoded
 
 `cb(err)` fires at the end of the operation with any errors.
 
-## var r = fw.heads(key, cb)
+## var r = fw.heads(key, opts={}, cb)
 
 Return an object stream of all the heads present for the given `key`.
 
@@ -180,9 +180,11 @@ Objects in the output stream are of the form:
 { hash: '...' }
 ```
 
+Optionally bound the query with `opts.gt`, `opts.gte`, `opts.lt` or `opts.lte`.
+
 If provided, `cb(err, heads)` fires with the buffered array of output objects.
 
-## var r = fw.links(key, cb)
+## var r = fw.links(key, opts={}, cb)
 
 Return an object stream of all the links present for the given `key`.
 
@@ -192,19 +194,21 @@ Objects in the output stream are of the form:
 { hash: '...', key: '...' }
 ```
 
+Optionally bound the query with `opts.gt`, `opts.gte`, `opts.lt` or `opts.lte`.
+
 If provided, `cb(err, links)` fires with the buffered array of output objects.
 
 ## var r = fw.keys(opts={}, cb)
 
 Return an object stream of all the keys present in the database.
 
-Optionally bound the query with `opts.gt` and `opts.lt`.
-
 Objects in the output stream are of the form:
 
 ```
 { key: '...' }
 ```
+
+Optionally bound the query with `opts.gt`, `opts.gte`, `opts.lt` or `opts.lte`.
 
 If provided, `cb(err, keys)` fires with the buffered array of output objects.
 
