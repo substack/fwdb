@@ -170,6 +170,8 @@ where you can add extra rows to the batch; keys are bytewise encoded
 
 `cb(err)` fires at the end of the operation with any errors.
 
+If `opts` is an array, each option will be inserted in the same batch.
+
 ## var r = fw.heads(key, opts={}, cb)
 
 Return an object stream of all the heads present for the given `key`.
