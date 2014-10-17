@@ -1,5 +1,5 @@
 var test = require('tape');
-var db = require('level-test')()('parallel');
+var db = require('level-test')()('batch');
 var fdb = require('../')(db);
 
 var docs = [
