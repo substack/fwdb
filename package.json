@@ -10,7 +10,7 @@
     "inherits": "^2.0.1",
     "isarray": "~0.0.1",
     "level-option-wrap": "^1.0.0",
-    "level-sublevel": "^6.3.13",
+    "levelup-defaults": "^1.0.1",
     "read-only-stream": "^1.1.1",
     "through2": "^1.1.1"
   },

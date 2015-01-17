@@ -1,4 +1,4 @@
-var sublevel = require('level-sublevel/bytewise');
+var defaults = require('levelup-defaults');
 var bytewise = require('bytewise');
 var defined = require('defined');
 var through = require('through2');
@@ -16,7 +16,7 @@ inherits(FWDB, EventEmitter);
 function FWDB (db) {
     if (!(this instanceof FWDB)) return new FWDB(db);
     EventEmitter.call(this);
-    this.db = sublevel(db, { keyEncoding: bytewise, valueEncoding: 'json' });
+    this.db = defaults(db, { keyEncoding: bytewise, valueEncoding: 'json' });
 }
 
 FWDB.prototype.create = function (opts, cb) {
