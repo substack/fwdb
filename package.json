@@ -1,8 +1,11 @@
 {
   "name": "fwdb",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "forking historical link database on top of leveldb",
   "main": "index.js",
+  "browser": {
+    "bytewise": "bytewise/hex"
+  },
   "dependencies": {
     "bytewise": "~0.7.1",
     "defined": "~0.0.0",
